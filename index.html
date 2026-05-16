@@ -874,14 +874,30 @@
     }
 
     @media (max-width: 640px) {
-      #site-header { padding: 0 20px; }
-      .hero-content { padding: 0 24px; }
-      .scroll-hint  { display: none; }
-      .container    { padding: 0 20px; }
-      .section-pad  { padding: 72px 0; }
-      .metrics-bar  { grid-template-columns: 1fr; }
-      .bottom-bar   { flex-direction: column; gap: 8px; text-align: center; padding: 20px; }
+      #site-header   { padding: 0 24px; }
+      .hero-content  { padding: 0 24px; }
+      .scroll-hint   { display: none; }
+      .container     { padding: 0 24px; }
+      .section-pad   { padding: 64px 0; }
+      .metrics-bar   { grid-template-columns: 1fr; }
+      .bottom-bar    { flex-direction: column; gap: 8px; text-align: center; padding: 20px 24px; }
+
+      /* prevent grid children from overflowing their tracks */
+      .what-layout > *,
+      .what-sticky,
+      .who-header > *,
+      .who-header-right,
+      .proof-top > * { min-width: 0; }
+
+      .section-title { font-size: clamp(26px, 7vw, 36px); }
+      .section-body  { font-size: 15px; }
+      .who-cell      { padding: 28px 24px; }
+      .what-card     { padding: 28px 24px; }
+      .metric        { padding: 36px 24px; }
     }
+
+    /* stop any horizontal bleed globally */
+    html, body { overflow-x: hidden; }
   </style>
 </head>
 <body>
