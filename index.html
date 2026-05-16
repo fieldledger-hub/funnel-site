@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Field Ledger</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;500;600;700;800;900&family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── RESET ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    /* ─── TOKENS ─── */
+    :root {
+      --white:       #FFFFFF;
+      --off-white:   #F8F7F4;
+      --grey-50:     #F2F1EE;
+      --grey-100:    #E8E6E1;
+      --grey-200:    #D4D1CB;
+      --grey-400:    #9B9891;
+      --grey-600:    #5C5A55;
+      --grey-800:    #2A2926;
+      --ink:         #141311;
+      --gold:        #B8902E;
+      --gold-light:  #D4AA4A;
+      --gold-pale:   #F5EDD6;
+      --hero-dark:   #111110;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-ui:      'Montserrat', sans-serif;
+      --font-body:    'Open Sans', sans-serif;
+      --ease:         cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--white);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ─── HEADER ─── */
+    #site-header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 0 48px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      transition: background 0.4s var(--ease), box-shadow 0.4s var(--ease);
+    }
+
+    #site-header.scrolled {
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 1px 0 var(--grey-100);
+    }
+
+    .header-logo {
+      width: 200px;
+      height: auto;
+      max-height: 52px;
+      object-fit: contain;
+      object-position: left center;
+      display: block;
+      filter: brightness(0) invert(1);
+      transition: filter 0.4s ease;
+    }
+
+    #site-header.scrolled .header-logo {
+      filter: brightness(0);
+    }
+
+    /* ─── HERO ─── */
+    #hero {
+      position: relative;
+      height: 100svh;
+      min-height: 640px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: var(--hero-dark);
+    }
+
+    /* Animated cinematic background (fallback for no video) */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    /* Video — drop hero-video.mp4 in the folder to activate */
+    .hero-bg video {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: 0.45;
+    }
+
+    /* CSS animated fallback — large moving panels */
+    .hero-bg::before {
+      content: '';
+      position: absolute;
+      inset: -20%;
+      background:
+        linear-gradient(135deg,
+          #1a1a18 0%,
+          #232320 20%,
+          #1c1c1a 40%,
+          #272724 60%,
+          #1a1a18 80%,
+          #1e1e1b 100%
+        );
+      animation: heroPan 18s ease-in-out infinite alternate;
+    }
+
+    @keyframes heroPan {
+      0%   { transform: scale(1.08) translate(0, 0); }
+      50%  { transform: scale(1.12) translate(-2%, -1.5%); }
+      100% { transform: scale(1.08) translate(2%, 1%); }
+    }
+
+    /* Grid texture */
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(184,144,46,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(184,144,46,0.04) 1px, transparent 1px);
+      background-size: 80px 80px;
+      animation: gridDrift 30s linear infinite;
+    }
+
+    @keyframes gridDrift {
+      from { background-position: 0 0; }
+      to   { background-position: 80px 80px; }
+    }
+
+    /* Gradient overlay — bottom up for text legibility */
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to top,
+        rgba(0,0,0,0.92) 0%,
+        rgba(0,0,0,0.55) 40%,
+        rgba(0,0,0,0.2) 70%,
+        rgba(0,0,0,0.1) 100%
+      );
+    }
+
+    /* Gold accent line — animated in */
+    .hero-line {
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 100%; height: 2px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light), transparent);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 0 40px;
+      max-width: 860px;
+      width: 100%;
+      text-align: center;
+      margin: 0 auto;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      margin: 0 auto 16px;
+      opacity: 0;
+      animation: fadeUp 0.8s var(--ease) 0.3s forwards;
+    }
+
+    .hero-eyebrow-bar {
+      width: 32px;
+      height: 1px;
+      background: var(--gold-light);
+    }
+
+    h1.hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(38px, 5.5vw, 72px);
+      line-height: 1.02;
+      letter-spacing: 0.02em;
+      color: var(--white);
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeUp 0.9s var(--ease) 0.5s forwards;
+    }
+
+    h1.hero-title em {
+      font-style: normal;
+      color: var(--gold-light);
+    }
+
+    .hero-sub {
+      font-family: var(--font-body);
+      font-size: clamp(14px, 1.5vw, 17px);
+      font-weight: 300;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.65;
+      max-width: 500px;
+      margin: 0 auto 32px;
+      opacity: 0;
+      animation: fadeUp 0.9s var(--ease) 0.7s forwards;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink);
+      background: var(--white);
+      padding: 16px 36px;
+      border: none;
+      text-decoration: none;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      animation: fadeUp 0.9s var(--ease) 0.9s forwards;
+      transition: background 0.25s ease, color 0.25s ease, transform 0.2s ease;
+    }
+
+    .hero-cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.35s var(--ease);
+    }
+
+    .hero-cta:hover::before { transform: scaleX(1); }
+    .hero-cta:hover { color: var(--white); transform: translateY(-1px); }
+
+    .hero-cta span {
+      position: relative;
+      z-index: 1;
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .hero-cta-arrow {
+      font-size: 16px;
+      transition: transform 0.25s ease;
+    }
+
+    .hero-cta:hover .hero-cta-arrow { transform: translateX(5px); }
+
+    /* Scroll indicator */
+    .scroll-hint {
+      position: absolute;
+      bottom: 28px;
+      right: 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      z-index: 2;
+      opacity: 0;
+      animation: fadeIn 1s ease 1.4s forwards;
+    }
+
+    .scroll-hint-label {
+      font-family: var(--font-ui);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      writing-mode: vertical-rl;
+    }
+
+    .scroll-hint-line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.3), transparent);
+      animation: scrollBounce 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollBounce {
+      0%, 100% { transform: scaleY(1); transform-origin: top; }
+      50%       { transform: scaleY(0.6); transform-origin: top; }
+    }
+
+    /* ─── SHARED SECTION ─── */
+    .section-pad { padding: 110px 0; }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-ui);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 18px;
+    }
+
+    .section-tag::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-family: var(--font-ui);
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      margin-bottom: 18px;
+    }
+
+    .section-body {
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--grey-600);
+      line-height: 1.8;
+    }
+
+    /* ─── MARQUEE STRIP ─── */
+    .marquee-strip {
+      background: var(--ink);
+      overflow: hidden;
+      padding: 14px 0;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: marquee 28s linear infinite;
+    }
+
+    .marquee-track:hover { animation-play-state: paused; }
+
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    .marquee-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 36px;
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--grey-400);
+      white-space: nowrap;
+    }
+
+    .marquee-item .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--gold);
+      flex-shrink: 0;
+    }
+
+    /* ─── WHAT I DO ─── */
+    #what { background: var(--white); }
+
+    .what-layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+
+    .what-sticky {
+      position: sticky;
+      top: 110px;
+    }
+
+    .what-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--grey-100);
+    }
+
+    .what-card {
+      background: var(--white);
+      padding: 36px 32px;
+      border-left: 3px solid transparent;
+      transition: border-color 0.3s ease, background 0.3s ease;
+      cursor: default;
+    }
+
+    .what-card:hover {
+      border-left-color: var(--gold);
+      background: var(--off-white);
+    }
+
+    .card-num {
+      font-family: var(--font-display);
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      color: var(--grey-200);
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-family: var(--font-ui);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+
+    .card-body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--grey-600);
+      line-height: 1.75;
+    }
+
+    /* ─── WHO IT'S FOR ─── */
+    #who { background: var(--grey-50); }
+
+    .who-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: end;
+      margin-bottom: 64px;
+    }
+
+    .who-header-right .section-body { max-width: 440px; }
+
+    .who-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background: var(--grey-200);
+    }
+
+    .who-cell {
+      background: var(--white);
+      padding: 36px 30px;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s ease;
+    }
+
+    .who-cell::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 100%; height: 2px;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s var(--ease);
+    }
+
+    .who-cell:hover { background: var(--off-white); }
+    .who-cell:hover::after { transform: scaleX(1); }
+
+    .who-cell-num {
+      font-family: var(--font-display);
+      font-size: 48px;
+      color: var(--grey-100);
+      line-height: 1;
+      margin-bottom: 16px;
+      transition: color 0.3s ease;
+    }
+
+    .who-cell:hover .who-cell-num { color: var(--gold-pale); }
+
+    .who-cell-title {
+      font-family: var(--font-ui);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .who-cell-body {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--grey-600);
+      line-height: 1.7;
+    }
+
+    /* ─── PROOF / RESULTS ─── */
+    #proof { background: var(--white); }
+
+    .proof-top {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: end;
+      margin-bottom: 72px;
+    }
+
+    /* Metrics */
+    .metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: var(--ink);
+      margin-bottom: 2px;
+    }
+
+    .metric {
+      padding: 48px 36px;
+      border-right: 1px solid rgba(255,255,255,0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric:last-child { border-right: none; }
+
+    .metric::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 100%; height: 2px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.6s var(--ease);
+    }
+
+    .metric.in-view::before { transform: scaleX(1); }
+
+    .metric-num {
+      font-family: var(--font-display);
+      font-size: clamp(44px, 5.5vw, 68px);
+      color: var(--white);
+      line-height: 1;
+      margin-bottom: 10px;
+      letter-spacing: 0.01em;
+    }
+
+    .metric-num span { color: var(--gold-light); }
+
+    .metric-label {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--grey-400);
+      line-height: 1.5;
+    }
+
+    /* Testimonials */
+    .testimonials {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2px;
+      background: var(--grey-100);
+    }
+
+    .testimonial {
+      background: var(--white);
+      padding: 44px 40px;
+      position: relative;
+      transition: background 0.3s ease;
+    }
+
+    .testimonial:hover { background: var(--off-white); }
+
+    .t-quote {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 52px;
+      line-height: 1;
+      color: var(--gold);
+      opacity: 0.2;
+      position: absolute;
+      top: 28px; left: 36px;
+    }
+
+    .t-text {
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-style: italic;
+      color: var(--grey-600);
+      line-height: 1.8;
+      margin-top: 32px;
+      margin-bottom: 32px;
+    }
+
+    .t-author {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-top: 24px;
+      border-top: 1px solid var(--grey-100);
+    }
+
+    .t-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--grey-50);
+      border: 2px solid var(--grey-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .t-name {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .t-role {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--grey-400);
+      margin-top: 2px;
+    }
+
+    /* ─── CTA SECTION ─── */
+    #cta {
+      background: var(--ink);
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .cta-glow {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 700px; height: 400px;
+      background: radial-gradient(ellipse, rgba(184,144,46,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(184,144,46,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(184,144,46,0.03) 1px, transparent 1px);
+      background-size: 64px 64px;
+    }
+
+    .cta-line-top {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    .cta-inner {
+      position: relative;
+      z-index: 2;
+      padding: 120px 0 140px;
+    }
+
+    .cta-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-ui);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      margin-bottom: 24px;
+    }
+
+    .cta-tag::before, .cta-tag::after {
+      content: '';
+      flex: 1;
+      width: 20px;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    h2.cta-title {
+      font-family: var(--font-display);
+      font-size: clamp(52px, 8vw, 100px);
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+      color: var(--white);
+      margin-bottom: 24px;
+    }
+
+    h2.cta-title em {
+      font-style: normal;
+      color: var(--gold-light);
+    }
+
+    .cta-body {
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.7;
+      max-width: 440px;
+      margin: 0 auto 52px;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      text-decoration: none;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .cta-btn-label {
+      background: var(--gold);
+      color: var(--ink);
+      padding: 18px 40px;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    .cta-btn-icon {
+      background: var(--gold-light);
+      color: var(--ink);
+      padding: 18px 20px;
+      font-size: 18px;
+      transition: background 0.25s ease, transform 0.25s ease, padding 0.25s ease;
+    }
+
+    .cta-btn:hover .cta-btn-label { background: var(--gold-light); }
+    .cta-btn:hover .cta-btn-icon  {
+      background: var(--white);
+      padding-left: 28px;
+    }
+
+    .cta-note {
+      display: block;
+      margin-top: 22px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── BOTTOM ─── */
+    .bottom-bar {
+      background: var(--grey-50);
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--grey-100);
+    }
+
+    .bottom-logo { height: 22px; width: auto; object-fit: contain; }
+
+    .bottom-copy {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--grey-400);
+    }
+
+    /* ─── DIVIDER ─── */
+    .rule {
+      width: 100%;
+      height: 1px;
+      background: var(--grey-100);
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-left {
+      opacity: 0;
+      transform: translateX(-32px);
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    }
+
+    .reveal-left.visible { opacity: 1; transform: translateX(0); }
+
+    .reveal-right {
+      opacity: 0;
+      transform: translateX(32px);
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    }
+
+    .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+    .d1 { transition-delay: 0.05s; }
+    .d2 { transition-delay: 0.12s; }
+    .d3 { transition-delay: 0.20s; }
+    .d4 { transition-delay: 0.28s; }
+    .d5 { transition-delay: 0.36s; }
+    .d6 { transition-delay: 0.44s; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 960px) {
+      .what-layout {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
+      .what-sticky { position: static; }
+
+      .who-header { grid-template-columns: 1fr; gap: 24px; margin-bottom: 40px; }
+      .who-grid   { grid-template-columns: 1fr; }
+
+      .proof-top  { grid-template-columns: 1fr; gap: 24px; margin-bottom: 48px; }
+      .metrics-bar { grid-template-columns: 1fr; }
+      .metric { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); }
+      .testimonials { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      #site-header { padding: 0 20px; }
+      .hero-content { padding: 0 24px; }
+      .scroll-hint  { display: none; }
+      .container    { padding: 0 20px; }
+      .section-pad  { padding: 72px 0; }
+      .metrics-bar  { grid-template-columns: 1fr; }
+      .bottom-bar   { flex-direction: column; gap: 8px; text-align: center; padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════ HEADER ═══════════════════════════ -->
+  <header id="site-header">
+    <img src="MAIN-LOGO.png" alt="Field Ledger" class="header-logo" />
+  </header>
+
+  <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+  <section id="hero">
+    <div class="hero-bg">
+      <!-- Drop your video file here to activate — poster shows while loading -->
+      <video autoplay muted loop playsinline>
+        <source src="Field Ledger.mp4" type="video/mp4" />
+      </video>
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-line"></div>
+
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-bar"></span>
+        Done-For-You Renovation Marketing · Australia
+      </div>
+      <h1 class="hero-title">
+        Real Budgets.<br />Real Projects.<br /><em>Your Calendar Full.</em>
+      </h1>
+      <p class="hero-sub">
+        We fill your calendar with pre-qualified homeowners who have a real renovation project, a real budget, and a real timeline. You stay on the tools. We handle the rest.
+      </p>
+      <a href="https://calendly.com/fieldledger/demo-call-with-abdullah-malik" target="_blank" rel="noopener" class="hero-cta">
+        <span>Book a Free Call <span class="hero-cta-arrow">→</span></span>
+      </a>
+    </div>
+
+    <div class="scroll-hint">
+      <div class="scroll-hint-line"></div>
+      <span class="scroll-hint-label">Scroll</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ MARQUEE ═══════════════════════════ -->
+  <div class="marquee-strip">
+    <div class="marquee-track">
+      <span class="marquee-item"><span class="dot"></span>10 Booked Site Visits Guaranteed</span>
+      <span class="marquee-item"><span class="dot"></span>60-Second Lead Response</span>
+      <span class="marquee-item"><span class="dot"></span>Pre-Qualified Homeowners Only</span>
+      <span class="marquee-item"><span class="dot"></span>Done-For-You Automation</span>
+      <span class="marquee-item"><span class="dot"></span>Meta Ads That Actually Convert</span>
+      <span class="marquee-item"><span class="dot"></span>No Tyre-Kickers. No Wasted Time.</span>
+      <span class="marquee-item"><span class="dot"></span>Results in 90 Days or We Keep Working Free</span>
+      <span class="marquee-item"><span class="dot"></span>10 Booked Site Visits Guaranteed</span>
+      <span class="marquee-item"><span class="dot"></span>60-Second Lead Response</span>
+      <span class="marquee-item"><span class="dot"></span>Pre-Qualified Homeowners Only</span>
+      <span class="marquee-item"><span class="dot"></span>Done-For-You Automation</span>
+      <span class="marquee-item"><span class="dot"></span>Meta Ads That Actually Convert</span>
+      <span class="marquee-item"><span class="dot"></span>No Tyre-Kickers. No Wasted Time.</span>
+      <span class="marquee-item"><span class="dot"></span>Results in 90 Days or We Keep Working Free</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ WHAT I DO ═══════════════════════════ -->
+  <section id="what">
+    <div class="container section-pad">
+      <div class="what-layout">
+
+        <div class="what-sticky">
+          <div class="section-tag reveal">What We Do</div>
+          <h2 class="section-title reveal d1">
+            From first click to<br />confirmed site visit,<br />fully automated
+          </h2>
+          <p class="section-body reveal d2">
+            Most marketing agencies have never set foot inside a trades business. We have. Every step of our system, from the ads to the qualification questions and automation sequences, is built around how renovation businesses actually run and how homeowners actually decide.
+          </p>
+        </div>
+
+        <div class="what-cards">
+          <div class="what-card reveal d1">
+            <div class="card-num">01</div>
+            <div class="card-title">Meta Ads Launch</div>
+            <div class="card-body">We run targeted Facebook and Instagram ads to homeowners in your service area who are actively researching bathroom, kitchen, or interior renovation projects right now. Not a broad audience, not a guess.</div>
+          </div>
+          <div class="what-card reveal d2">
+            <div class="card-num">02</div>
+            <div class="card-title">Instant 60-Second Lead Response</div>
+            <div class="card-body">The moment a homeowner submits their details, our automation responds within 60 seconds via SMS and email, before they have a chance to enquire anywhere else.</div>
+          </div>
+          <div class="what-card reveal d3">
+            <div class="card-num">03</div>
+            <div class="card-title">Qualification & Filtering</div>
+            <div class="card-body">Automated messages ask about project type, timeline, budget, and location. Anyone who is not serious is filtered out before they ever reach you. You only deal with homeowners worth your time.</div>
+          </div>
+          <div class="what-card reveal d4">
+            <div class="card-num">04</div>
+            <div class="card-title">Automated Booking & CRM Follow-Up</div>
+            <div class="card-body">Qualified homeowners are sent a booking link and confirmed directly into your calendar as a site visit. Every warm lead that doesn't book immediately is followed up automatically so nothing slips through.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <!-- ═══════════════════════════ WHO IT'S FOR ═══════════════════════════ -->
+  <section id="who">
+    <div class="container section-pad">
+
+      <div class="who-header">
+        <div>
+          <div class="section-tag reveal">Who It's For</div>
+          <h2 class="section-title reveal d1">
+            Built for<br />renovation contractors<br />ready to scale
+          </h2>
+        </div>
+        <div class="who-header-right">
+          <p class="section-body reveal">
+            We work exclusively with bathroom, kitchen, and multi-room interior renovation contractors in Australia running teams of 2 to 15 people. Contractors doing high-quality work who are tired of chasing leads that go nowhere.
+          </p>
+        </div>
+      </div>
+
+      <div class="who-grid">
+        <div class="who-cell reveal d1">
+          <div class="who-cell-num">01</div>
+          <div class="who-cell-title">You're paying for leads that go nowhere</div>
+          <div class="who-cell-body">HiPages, ServiceSeeking, or a marketing agency sending you tyre-kickers who want a ballpark figure over the phone and then disappear. You are done paying for clicks and impressions that don't fill your calendar.</div>
+        </div>
+        <div class="who-cell reveal d2">
+          <div class="who-cell-num">02</div>
+          <div class="who-cell-title">Good leads slip through while you're on the tools</div>
+          <div class="who-cell-body">When a decent enquiry does come in, you're on the job site. By the time you call back they've booked someone else. You need a system that responds and qualifies in the time it takes you to finish a cut.</div>
+        </div>
+        <div class="who-cell reveal d3">
+          <div class="who-cell-num">03</div>
+          <div class="who-cell-title">You have capacity and are ready to fill it</div>
+          <div class="who-cell-body">You can take on 2 to 4 new jobs per month and you're done relying on referrals and lead platforms that sell your details to four competitors at the same time. You want confirmed appointments in your calendar, not more enquiries to manage.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <!-- ═══════════════════════════ PROOF / RESULTS ═══════════════════════════ -->
+  <section id="proof">
+    <div class="container section-pad">
+
+      <div class="proof-top">
+        <div>
+          <div class="section-tag reveal">The Guarantee</div>
+          <h2 class="section-title reveal d1">
+            10 booked site visits<br />in 90 days.<br />Or we keep working free.
+          </h2>
+        </div>
+        <div>
+          <p class="section-body reveal">
+            If we fall short for any reason, your monthly retainer stops and we keep working at no extra charge until we hit that number. No awkward conversations. No refund requests. We built this business from inside the industry. We know what it takes, and we back it with a guarantee that puts the risk on us, not you.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="metrics-bar">
+      <div class="metric reveal d1">
+        <div class="metric-num">10<span>+</span></div>
+        <div class="metric-label">Booked site visits guaranteed within 90 days</div>
+      </div>
+      <div class="metric reveal d2">
+        <div class="metric-num">60<span>sec</span></div>
+        <div class="metric-label">Automatic lead response before they call anyone else</div>
+      </div>
+      <div class="metric reveal d3">
+        <div class="metric-num">$100<span>k</span></div>
+        <div class="metric-label">Potential new revenue from 3–4 closes at $25k avg project value</div>
+      </div>
+    </div>
+
+
+  </section>
+
+  <!-- ═══════════════════════════ CTA ═══════════════════════════ -->
+  <section id="cta">
+    <div class="cta-glow"></div>
+    <div class="cta-grid-bg"></div>
+    <div class="cta-line-top"></div>
+    <div class="container">
+      <div class="cta-inner">
+        <div class="cta-tag reveal">Next Step</div>
+        <h2 class="cta-title reveal d1">
+          Ready to Fill<br />Your <em>Calendar?</em>
+        </h2>
+        <p class="cta-body reveal d2">
+          Book a free 20-minute call. We'll ask a few questions about your business, walk you through exactly how the system works, and tell you honestly whether we're a good fit. No pitch. No pressure. Just a straight conversation.
+        </p>
+        <a href="https://calendly.com/fieldledger/demo-call-with-abdullah-malik" target="_blank" rel="noopener" class="cta-btn reveal d3">
+          <span class="cta-btn-label">Book Now</span>
+          <span class="cta-btn-icon">→</span>
+        </a>
+        <span class="cta-note reveal d4">Free 20-min discovery call &nbsp;&middot;&nbsp; No commitment &nbsp;&middot;&nbsp; Honest conversation</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ BOTTOM BAR ═══════════════════════════ -->
+  <div class="bottom-bar">
+    <img src="MAIN-LOGO.png" alt="Field Ledger" class="bottom-logo" />
+    <span class="bottom-copy">© 2026 Field Ledger. All rights reserved.</span>
+  </div>
+
+  <!-- ═══════════════════════════ SCRIPTS ═══════════════════════════ -->
+  <script>
+    /* Header transparency on scroll */
+    const header = document.getElementById('site-header');
+    window.addEventListener('scroll', () => {
+      header.classList.toggle('scrolled', window.scrollY > 60);
+    }, { passive: true });
+
+    /* Scroll reveal — IntersectionObserver */
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          revealObserver.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right')
+      .forEach(el => revealObserver.observe(el));
+
+    /* Metric in-view class for bottom border animation */
+    const metricObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add('in-view');
+      });
+    }, { threshold: 0.3 });
+
+    document.querySelectorAll('.metric').forEach(el => metricObserver.observe(el));
+  </script>
+</body>
+</html>
