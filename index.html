@@ -889,11 +889,41 @@
       .who-header-right,
       .proof-top > * { min-width: 0; }
 
+      /* center all text content on mobile */
+      .section-tag,
+      .section-title,
+      .section-body,
+      .card-num,
+      .card-title,
+      .card-body,
+      .who-cell-num,
+      .who-cell-title,
+      .who-cell-body,
+      .metric-num,
+      .metric-label,
+      .proof-top,
+      .what-sticky,
+      .cta-tag,
+      .cta-body { text-align: center; }
+
+      /* center the tag's decorative line too */
+      .section-tag { justify-content: center; }
+
+      /* center the who-header text block */
+      .who-header { text-align: center; }
+      .who-header-right .section-body { margin: 0 auto; }
+
+      /* center proof top */
+      .proof-top > div { text-align: center; }
+      .proof-top .section-body { margin: 0 auto; }
+
       .section-title { font-size: clamp(26px, 7vw, 36px); }
       .section-body  { font-size: 15px; }
-      .who-cell      { padding: 28px 24px; }
-      .what-card     { padding: 28px 24px; }
-      .metric        { padding: 36px 24px; }
+      .who-cell      { padding: 28px 24px; text-align: center; }
+      .what-card     { padding: 28px 24px; text-align: center; }
+      .metric        { padding: 36px 24px; text-align: center; }
+      .t-text        { text-align: center; }
+      .t-author      { justify-content: center; }
     }
 
     /* stop any horizontal bleed globally */
